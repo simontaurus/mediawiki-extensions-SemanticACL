@@ -258,6 +258,7 @@ class SemanticACL
     	global $smwgNamespacesWithSemanticLinks;
     	global $wgSemanticACLWhitelistIPs;
     	global $wgRequest;
+        global $wgWhitelistRead;
     
     	if($title->isTalkPage())
     	{
@@ -280,7 +281,8 @@ class SemanticACL
     
     	if(!isset($smwgNamespacesWithSemanticLinks[$title->getNamespace()]) || !$smwgNamespacesWithSemanticLinks[$title->getNamespace()])
     	{
-    		return true; // No need to check permissions on namespaces that do not support SemanticMediaWiki
+		if($user->isAnon() && !in_array($title->getPrefixedText(), $wgWhitelistRead)) return false; //block anon access to non-semantic pages exept whitelisted
+    		else return true; // No need to check permissions on namespaces that do not support SemanticMediaWiki
     	}
     
     	// The prefix for the whitelisted group and user properties
@@ -295,6 +297,32 @@ class SemanticACL
     	$store = SMW\StoreFactory::getStore()->getSemanticData($subject);
     	$property = new SMWDIProperty($prefix);
     	$aclTypes = $store->getPropertyValues( $property );
+
+        //check if SemanticACL-controlled page
+	$sac_controlled_page = false;
+    	foreach($aclTypes as $valueObj) // For each ACL specifier.
+    	{
+    		switch(strtolower($valueObj->getString()))
+    		{
+        		case 'whitelist':
+        			$sac_controlled_page = true;
+    			    break;
+    			    
+        		case 'key':
+					$sac_controlled_page = true;
+        		    break;
+        		    
+        		case 'users':
+					$sac_controlled_page = true;
+        		    $hasPermission = !$user->isAnon();
+        		    break;
+        		    
+        		case 'public':
+					$sac_controlled_page = true;
+        		    return true;
+    		}
+    	}
+	if(!$sac_controlled_page && $user->isAnon()) return false;
     
     	if($disableCaching)
     	{
@@ -347,6 +375,7 @@ class SemanticACL
         			        $isWhitelisted = true;
         			        break;
         			    }
+
         			}
         
         			$whitelistValues = $store->getPropertyValues($userProperty);
