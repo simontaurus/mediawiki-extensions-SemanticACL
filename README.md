@@ -13,6 +13,10 @@ Therefore the wiki has to be set to 'pseudo public', meaning
 `$wgGroupPermissions['*']['read'] = true;`
 
 in LocalSettings.php, but SemanticACL limits access instead of the core mediawiki by disables access for anon users any on pages without any SemanticACL Properties (exempt pages whitelistet with `$wgWhitelistRead[]`) 
+At least the login page must be accessable:
+
+`$wgWhitelistRead[] = 'Special:UserLogin';`
+
 
 Because img_auth.php evaluates `$wgGroupPermissions['*']['read']`, this file has to be patched as well by replacing 
 
