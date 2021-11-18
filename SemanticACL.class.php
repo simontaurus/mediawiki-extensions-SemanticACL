@@ -97,6 +97,11 @@ class SemanticACL
                 self::disableCaching(); // That item is not always visible, disable caching.
                 $accessible = false;
             }
+	    else if(!self::pageHasRequiredCategory($title))
+            {
+                self::disableCaching(); // That item is not always visible, disable caching.
+                $accessible = false;
+            }
             else 
             {
                 $semanticData = $store->getSemanticData($result);
@@ -319,6 +324,10 @@ class SemanticACL
     			return false;
     		}
     	}
+	if(!self::pageHasRequiredCategory($title) && !$user->isAllowed('view-non-categorized-pages'))
+    	{
+    		return false;
+    	}
     	
     	$hasPermission = true;
     	
@@ -441,6 +450,36 @@ class SemanticACL
     		foreach($page->getCategories() as $category)
     		{
     			if($category->getDBKey() == str_replace(" ", "_", $wgPublicImagesCategory))
+    			{
+    				return true;
+    			}
+    		}
+    
+    		return false;
+    	}
+    
+    	return true;
+    }
+	
+    /** 
+     * Pages that have not been categorized most likely have an unknown status when it comes to author's rights. This function tests if
+     * a page is part of a category for pages whose's permissions have been set.
+     * @param Title $title the title of the page
+     * @return boolean if the file has been properly categorized 
+     * */
+    protected static function pageHasRequiredCategory($title) 
+    {
+    	global $wgPublicPagesCategory;
+    
+    	if(isset($wgPublicPagesCategory) && $wgPublicPagesCategory && $title->getNamespace() == NS_MAIN)
+    	{
+    		$inCategory = false;
+    
+    		$page = Article::newFromTitle($title, RequestContext::getMain());
+    
+    		foreach($page->getCategories() as $category)
+    		{
+    			if($category->getDBKey() == str_replace(" ", "_", $wgPublicPagesCategory))
     			{
     				return true;
     			}
