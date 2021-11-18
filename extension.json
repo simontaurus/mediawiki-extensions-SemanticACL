@@ -17,7 +17,8 @@
 	},
 	"AvailableRights": [
 		"sacl-exempt",
-		"view-non-categorized-media"
+		"view-non-categorized-media",
+		"view-non-categorized-pages"
 	],
 	"GroupPermissions": {
 		"sysop": {
@@ -35,6 +36,10 @@
 		"PublicImagesCategory": {
 			"value": null,
 			"description": "Only files within this category are shown to unregistered users. This feature is useful for wikis that make use of copyrighted images that have not been cleared for public viewing."
+		},
+		"PublicPagesCategory": {
+			"value": null,
+			"description": "Only pages within this category are shown to unregistered users"
 		},
 		"EnablePrivateLinks": {
 			"value": true,
