@@ -71,9 +71,16 @@ class SemanticACL
         /* NOTE: this filtering does not work with count queries. To do filtering on count queries, we would
          * have to use SMW::Store::BeforeQueryResultLookupComplete to add conditions on ACL properties. 
          * However, doing that would make it extremely difficult to tweak caching on results.*/
-        
         global $wgUser;
-        $filtered = [];
+        
+        
+        #wfErrorLog( "\nhasPermission.\n", '/var/www/html/w/my-custom-debug.log' );
+        #wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
+        #wfErrorLog( "Title: $title\n", '/var/www/html/w/my-custom-debug.log' );
+        #wfErrorLog( "User: $wgUser\n", '/var/www/html/w/my-custom-debug.log' );
+
+
+	$filtered = [];
         $changed = false; // If the result list was changed.
         
         foreach($queryResult->getResults() as $result)
@@ -91,13 +98,13 @@ class SemanticACL
                 self::disableCaching(); // That item is not always visible, disable caching.
                 $accessible = false;
             }
-            else if($title->getNamespace() == NS_FILE && !self::fileHasRequiredCategory($title))
+            else if($title->getNamespace() == NS_FILE && !self::fileHasRequiredCategory($title) && !$wgUser->isAllowed('view-non-categorized-media'))
             {
                 
                 self::disableCaching(); // That item is not always visible, disable caching.
                 $accessible = false;
             }
-	    else if(!self::pageHasRequiredCategory($title))
+	    else if(!self::pageHasRequiredCategory($title) && !$wgUser->isAllowed('view-non-categorized-pages'))
             {
                 self::disableCaching(); // That item is not always visible, disable caching.
                 $accessible = false;
@@ -133,7 +140,8 @@ class SemanticACL
             if($accessible) { $filtered[] = $result; } 
             else { $changed = true; } // Skip that item.
         }
-        
+        #wfErrorLog( "\nonSMW Query changed: $changed .\n", '/var/www/html/w/my-custom-debug.log' );
+
         if(!$changed) { return; } // No changes to the query results.
         
         // Build a new query result object
@@ -191,6 +199,7 @@ class SemanticACL
      * */
     public static function onParserFetchTemplate($parser, $title, $rev, &$text, &$deps)
     {
+        #wfErrorLog( "\nonParserFetchTemplate.\n", '/var/www/html/w/my-custom-debug.log' );
     	if(self::hasPermission($title, 'read', RequestContext::getMain()->getUser(), true))
     	{
     		return true; // User is allowed to view that template.
@@ -258,11 +267,17 @@ class SemanticACL
      * @param bool $disableCaching force the page being checked to be rerendered for each user
      * @return boolean if the user is allowed to conduct the action 
      * */
-    protected static function hasPermission($title, $action, $user, $disableCaching = true) 
+    protected static function hasPermission($title, $action, $user, $disableCaching = true, $first=true) 
     {
     	global $smwgNamespacesWithSemanticLinks;
     	global $wgSemanticACLWhitelistIPs;
     	global $wgRequest;
+
+        #wfErrorLog( "\nhasPermission.\n", '/var/www/html/w/my-custom-debug.log' );
+        #wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
+        #wfErrorLog( "Title: $title\n", '/var/www/html/w/my-custom-debug.log' );
+        #wfErrorLog( "User: $user\n", '/var/www/html/w/my-custom-debug.log' );
+        #if($first) wfErrorLog( "Access: " . self::hasPermission($title, $action, $user, $disableCaching,false) . "\n", '/var/www/html/w/my-custom-debug.log' );
     
     	if($title->isTalkPage())
     	{
@@ -436,6 +451,8 @@ class SemanticACL
      * */
     protected static function fileHasRequiredCategory($title) 
     {
+        #wfErrorLog( "\nfileHasRequiredCategory.\n", '/var/www/html/w/my-custom-debug.log' );
+
     	global $wgPublicImagesCategory;
     
     	if(isset($wgPublicImagesCategory) && $wgPublicImagesCategory && $title->getNamespace() == NS_FILE)
@@ -454,7 +471,7 @@ class SemanticACL
     				return true;
     			}
     		}
-    
+                 #wfErrorLog( "\nFALSE\n", '/var/www/html/w/my-custom-debug.log' );
     		return false;
     	}
     
@@ -469,6 +486,8 @@ class SemanticACL
      * */
     protected static function pageHasRequiredCategory($title) 
     {
+        #wfErrorLog( "\npageHasRequiredCategory: $title.\n", '/var/www/html/w/my-custom-debug.log' );
+
     	global $wgPublicPagesCategory;
     
     	if(isset($wgPublicPagesCategory) && $wgPublicPagesCategory && $title->getNamespace() == NS_MAIN)
@@ -479,12 +498,15 @@ class SemanticACL
     
     		foreach($page->getCategories() as $category)
     		{
+			#wfErrorLog( "\nTest: " . $category->getDBKey() . "=" . str_replace(" ", "_", $wgPublicPagesCategory) . "\n", '/var/www/html/w/my-custom-debug.log' );
+
     			if($category->getDBKey() == str_replace(" ", "_", $wgPublicPagesCategory))
     			{
+                                #wfErrorLog( "\nFALSE\n", '/var/www/html/w/my-custom-debug.log' );
     				return true;
     			}
     		}
-    
+                #wfErrorLog( "\nFALSE\n", '/var/www/html/w/my-custom-debug.log' );
     		return false;
     	}
     
