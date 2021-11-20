@@ -52,10 +52,12 @@ $mediawiki->doPostOutputShutdown( 'fast' );
 
 function wfImageAuthMain() {
 	global $wgImgAuthUrlPathMap;
+  	global $wgImgAuthForceAuth;
 
 	$request = RequestContext::getMain()->getRequest();
-	$publicWiki = in_array( 'read', User::getGroupPermissions( [ '*' ] ), true );
-
+  	if ( isset( $wgImgAuthForceAuth ) && $wgImgAuthForceAuth ) $publicWiki = false; //force img_auth to validate access for partially public wikis
+	else $publicWiki = in_array( 'read', User::getGroupPermissions( [ '*' ] ), true );
+  
 	// Get the requested file path (source file or thumbnail)
 	$matches = WebRequest::getPathInfo();
 	if ( !isset( $matches['title'] ) ) {
