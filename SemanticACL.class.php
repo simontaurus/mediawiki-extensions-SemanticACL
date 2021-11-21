@@ -438,9 +438,13 @@ class SemanticACL
     protected static function disableCaching() 
     {
     	global $wgParser;
-    	if($wgParser->getOutput()) { $wgParser->getOutput()->updateCacheExpiry(0); }
-    
-    	RequestContext::getMain()->getOutput()->enableClientCache(false);
+        global $wgSaclForceCaching;
+
+        if(isset($wgSaclForceCaching) && $wgSaclForceCaching) { return; }
+    	else {
+		if($wgParser->getOutput()) { $wgParser->getOutput()->updateCacheExpiry(0); }
+    		RequestContext::getMain()->getOutput()->enableClientCache(false);
+	}
     }
     
     /** 

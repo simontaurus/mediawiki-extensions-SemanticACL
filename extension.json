@@ -44,7 +44,12 @@
 		"EnablePrivateLinks": {
 			"value": true,
 			"description": "If protected pages can be viewed by anyone using a private link with a key."
-		}
+		},
+                "SaclForceCaching": {
+                        "value": false,
+                        "description": "Force caching of restricted pages. Only for testing - may lead to data leaks."
+                }
+
 	},
 	"Hooks": {
 		"SMW::Property::initProperties": "MediaWiki\\Extension\\SemanticACL\\SemanticACL::onSMWPropertyinitProperties",
