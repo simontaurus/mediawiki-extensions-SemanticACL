@@ -65,11 +65,17 @@ class SemanticACL {
 	/**
 	 * Filter results out of queries the current user is not supposed to see.
 	 */
-	public static function onSMWStoreAfterQueryResultLookupComplete( SMW\Store $store, SMWQueryResult &$queryResult ) {
+        public static function onSMWStoreAfterQueryResultLookupComplete( SMW\Store $store, &$queryResult ) {
 		/* NOTE: this filtering does not work with count queries. To do filtering on count queries, we would
 		 * have to use SMW::Store::BeforeQueryResultLookupComplete to add conditions on ACL properties.
 		 * However, doing that would make it extremely difficult to tweak caching on results.
 		 */
+
+                /* FIX 
+                 * "Argument 2 passed to MediaWiki\Extension\SemanticACL\SemanticACL::onSMWStoreAfterQueryResultLookupComplete() must be an instance of SMW\Query\QueryRes, int given"
+                 * after saving page with visual editor
+                 */
+		if ( !$queryResult instanceof SMWQueryResult) return; 
 
 		global $wgUser;
 		$filtered = [];
