@@ -35,20 +35,24 @@
 		},
 		"PublicImagesCategory": {
 			"value": null,
-			"description": "Only files within this category are shown to unregistered users. This feature is useful for wikis that make use of copyrighted images that have not been cleared for public viewing."
+			"description": "Files within this category are shown to unregistered users. This feature is useful for wikis that make use of copyrighted images that have not been cleared for public viewing."
 		},
 		"PublicPagesCategory": {
 			"value": null,
-			"description": "Only pages within this category are shown to unregistered users"
+			"description": "Pages within this category are shown to unregistered users"
+		},
+		"PublicNamespaces": {
+			"value": null,
+			"description": "Pages within this namespaces are always public, e.g. NS_TEMPLATE"
 		},
 		"EnablePrivateLinks": {
 			"value": true,
 			"description": "If protected pages can be viewed by anyone using a private link with a key."
 		},
-                "SaclForceCaching": {
-                        "value": false,
-                        "description": "Force caching of restricted pages. Only for testing - may lead to data leaks."
-                }
+		"SaclForceCaching": {
+			"value": false,
+			"description": "Force caching of restricted pages. Only for testing - may lead to data leaks."
+		}
 
 	},
 	"Hooks": {

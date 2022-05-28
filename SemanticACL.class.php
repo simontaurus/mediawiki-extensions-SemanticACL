@@ -72,7 +72,7 @@ class SemanticACL {
 		* However, doing that would make it extremely difficult to tweak caching on results.
 		*/
 
-		#wfErrorLog( "\nhasPermission.\n", '/var/www/html/w/my-custom-debug.log' );
+		wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete\n" );
 		#wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
 		#wfErrorLog( "Title: $title\n", '/var/www/html/w/my-custom-debug.log' );
 		#wfErrorLog( "User: $wgUser\n", '/var/www/html/w/my-custom-debug.log' );
@@ -286,12 +286,13 @@ class SemanticACL {
 	 */
 	protected static function hasPermission( $title, $action, $user, $disableCaching = true, $first = true ) {
 		global $smwgNamespacesWithSemanticLinks;
+		global $wgPublicNamespaces;
 		global $wgSemanticACLWhitelistIPs;
 		global $wgRequest;
 
-		#wfErrorLog( "\nhasPermission.\n", '/var/www/html/w/my-custom-debug.log' );
+		wfDebug( "\n[SemanticACL] hasPermission.\n" );
 		#wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
-		#wfErrorLog( "Title: $title\n", '/var/www/html/w/my-custom-debug.log' );
+		wfDebug( "Title: $title\n" );
 		#wfErrorLog( "User: $user\n", '/var/www/html/w/my-custom-debug.log' );
 		#if($first) wfErrorLog( "Access: " . self::hasPermission($title, $action, $user, $disableCaching,false) . "\n", '/var/www/html/w/my-custom-debug.log' );
 
@@ -311,13 +312,22 @@ class SemanticACL {
 				}
 			}
 		}
-	
+
+
+		if (
+			isset( $wgPublicNamespaces[$title->getNamespace()] ) &&
+			$wgPublicNamespaces[$title->getNamespace()]
+			) {
+			// No need to check permissions on public namespaces
+			return true;
+		}
+
 		if (
 			!isset( $smwgNamespacesWithSemanticLinks[$title->getNamespace()] ) ||
 			!$smwgNamespacesWithSemanticLinks[$title->getNamespace()]
 			) {
 			// No need to check permissions on namespaces that do not support SemanticMediaWiki
-			return true; 
+			return false; //TODO: Check of page is in public category 
 		}
 	
 		// The prefix for the whitelisted group and user properties
@@ -365,7 +375,7 @@ class SemanticACL {
 			return false;
 		}
 
-		$hasPermission = true;
+		$hasPermission = !$user->isAnon(); //users need explicit deny, anons need explicit grant
 
 		foreach ( $aclTypes as $valueObj ) { // For each ACL specifier.
 			switch ( strtolower( $valueObj->getString() ) ) {
@@ -532,7 +542,7 @@ class SemanticACL {
 	 * @return boolean if the file has been properly categorized 
 	 */
 	protected static function pageHasRequiredCategory( $title ) {
-		#wfErrorLog( "\npageHasRequiredCategory: $title.\n", '/var/www/html/w/my-custom-debug.log' );
+		wfDebug( "\n[SemanticACL] pageHasRequiredCategory: $title.\n" ); //, '/var/www/html/w/my-custom-debug.log' );
 
 		global $wgPublicPagesCategory;
 	
