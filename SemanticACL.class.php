@@ -72,7 +72,7 @@ class SemanticACL {
 		* However, doing that would make it extremely difficult to tweak caching on results.
 		*/
 
-		wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete\n" );
+		#wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete\n" );
 		#wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
 		#wfErrorLog( "Title: $title\n", '/var/www/html/w/my-custom-debug.log' );
 		#wfErrorLog( "User: $wgUser\n", '/var/www/html/w/my-custom-debug.log' );
@@ -84,14 +84,42 @@ class SemanticACL {
 		if ( !$queryResult instanceof SMWQueryResult) return; 
 
 		global $wgUser;
+
+		/*$_filtered = [];
+		$resultArrays = $queryResult->getNext();
+		while ( $resultArrays ) {
+			foreach ( $resultArrays as $resultArray ) {
+				$dataItem = $resultArray->getNextDataItem();
+				while ( $dataItem ) {
+					$accessible = true;
+					if ( $dataItem->getDIType() == 9 ) { //TYPE_WIKIPAGE
+						$dataItemTitle = $dataItem->getTitle();
+						wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete: directvalue $dataItemTitle is page\n" );
+						if ( !self::hasPermission( $dataItemTitle, 'read', $wgUser, false ) ) {
+							$accessible = false;
+							self::disableCaching(); // That item is not always visible, disable caching.
+							wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete: remove $dataItemTitle from result\n" );
+						}
+					}
+					if ( $accessible ) $_filtered[] = $dataItem;
+					$dataItem = $resultArray->getNextDataItem();
+				}
+				$resultArray->reset();
+			}
+			$resultArrays = $queryResult->getNext();
+		}
+		$queryResult->reset();*/
+
 		$filtered = [];
 		$changed = false; // If the result list was changed.
 
 		foreach ( $queryResult->getResults() as $result ) {
+		#foreach ( $_filtered as $result ) {
+		#	if ( $result->getDIType() != 9 ) continue;
 			$title = $result->getTitle();
 			if ( !$title instanceof Title ) {
 				// T296559
-				continue;
+				 continue;
 			}
 			
 			$accessible = true;
@@ -129,6 +157,21 @@ class SemanticACL {
 						}
 					}
 				}
+				//does not work
+				/*foreach ( $semanticData->getProperties() as $property ) {
+					// Look for pages in the list of property values.
+					foreach ( $semanticData->getPropertyValues( $property ) as $dataItem ) {
+						if ( $dataItem->getDIType() == 9 ) { //TYPE_WIKIPAGE
+							$dataItemTitle = $dataItem->getTitle();
+							//wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete: $title property $property value $dataItemTitle is page\n" );
+							if ( !self::hasPermission( $dataItemTitle, 'read', $wgUser, false ) ) {
+								self::disableCaching(); // That item is not always visible, disable caching.
+								$semanticData->removePropertyObjectValue($property, $dataItem);
+								//wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete: remove $dataItemTitle from result\n" );
+							}
+						}
+					}
+				}*/
 			}
 
 			if ( $accessible ) { 
@@ -290,9 +333,9 @@ class SemanticACL {
 		global $wgSemanticACLWhitelistIPs;
 		global $wgRequest;
 
-		wfDebug( "\n[SemanticACL] hasPermission.\n" );
+		#wfDebug( "\n[SemanticACL] hasPermission.\n" );
 		#wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
-		wfDebug( "Title: $title\n" );
+		#wfDebug( "Title: $title\n" );
 		#wfErrorLog( "User: $user\n", '/var/www/html/w/my-custom-debug.log' );
 		#if($first) wfErrorLog( "Access: " . self::hasPermission($title, $action, $user, $disableCaching,false) . "\n", '/var/www/html/w/my-custom-debug.log' );
 
@@ -327,7 +370,8 @@ class SemanticACL {
 			!$smwgNamespacesWithSemanticLinks[$title->getNamespace()]
 			) {
 			// No need to check permissions on namespaces that do not support SemanticMediaWiki
-			return false; //TODO: Check of page is in public category 
+			if ( $title->getNamespace() == NS_SPECIAL ) return true;
+			else return false; //Default restrict namespaces except Special. TODO: Check of page is in public category 
 		}
 	
 		// The prefix for the whitelisted group and user properties
@@ -542,7 +586,7 @@ class SemanticACL {
 	 * @return boolean if the file has been properly categorized 
 	 */
 	protected static function pageHasRequiredCategory( $title ) {
-		wfDebug( "\n[SemanticACL] pageHasRequiredCategory: $title.\n" ); //, '/var/www/html/w/my-custom-debug.log' );
+		#wfDebug( "\n[SemanticACL] pageHasRequiredCategory: $title.\n" ); //, '/var/www/html/w/my-custom-debug.log' );
 
 		global $wgPublicPagesCategory;
 	
