@@ -72,7 +72,7 @@ class SemanticACL {
 		* However, doing that would make it extremely difficult to tweak caching on results.
 		*/
 
-		wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete\n" );
+		#wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete\n" );
 		#wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
 		#wfErrorLog( "Title: $title\n", '/var/www/html/w/my-custom-debug.log' );
 		#wfErrorLog( "User: $wgUser\n", '/var/www/html/w/my-custom-debug.log' );
@@ -291,10 +291,10 @@ class SemanticACL {
 		global $wgRequest;
 
 		wfDebug( "\n[SemanticACL] hasPermission.\n" );
-		#wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
+		wfDebug( "Action: $action\n" );
 		wfDebug( "Title: $title\n" );
-		#wfErrorLog( "User: $user\n", '/var/www/html/w/my-custom-debug.log' );
-		#if($first) wfErrorLog( "Access: " . self::hasPermission($title, $action, $user, $disableCaching,false) . "\n", '/var/www/html/w/my-custom-debug.log' );
+		wfDebug( "User: $user\n" );
+		if($first) wfDebug( "Access: " . self::hasPermission($title, $action, $user, $disableCaching,false) . "\n" );
 
 		if ( $title->isTalkPage() ) {
 			// Talk pages get the same permission as their subject page.
