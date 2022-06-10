@@ -327,7 +327,7 @@ class SemanticACL {
 			!$smwgNamespacesWithSemanticLinks[$title->getNamespace()]
 			) {
 			// No need to check permissions on namespaces that do not support SemanticMediaWiki
-			return false; //TODO: Check of page is in public category 
+			return true; //false; //TODO: Check of page is in public category 
 		}
 	
 		// The prefix for the whitelisted group and user properties
@@ -563,6 +563,6 @@ class SemanticACL {
 			return false;
 		}
 
-		return true;
+		return false; //true;
 	}
 }
