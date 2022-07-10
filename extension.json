@@ -45,6 +45,10 @@
 			"value": null,
 			"description": "Pages within this namespaces are always public, e.g. NS_TEMPLATE"
 		},
+                "PrivateNamespaces": {
+                        "value": null,
+                        "description": "Pages within this namespaces are always private, e.g. NS_USER"
+                },
 		"EnablePrivateLinks": {
 			"value": true,
 			"description": "If protected pages can be viewed by anyone using a private link with a key."

@@ -287,14 +287,15 @@ class SemanticACL {
 	protected static function hasPermission( $title, $action, $user, $disableCaching = true, $first = true ) {
 		global $smwgNamespacesWithSemanticLinks;
 		global $wgPublicNamespaces;
+		global $wgPrivateNamespaces;
 		global $wgSemanticACLWhitelistIPs;
 		global $wgRequest;
 
-		wfDebug( "\n[SemanticACL] hasPermission.\n" );
-		wfDebug( "Action: $action\n" );
-		wfDebug( "Title: $title\n" );
-		wfDebug( "User: $user\n" );
-		if($first) wfDebug( "Access: " . self::hasPermission($title, $action, $user, $disableCaching,false) . "\n" );
+		#wfDebug( "\n[SemanticACL] hasPermission.\n" );
+		#wfDebug( "Action: $action\n" );
+		#wfDebug( "Title: $title\n" );
+		#wfDebug( "User: $user\n" );
+		#if($first) wfDebug( "Access: " . self::hasPermission($title, $action, $user, $disableCaching,false) . "\n" );
 
 		if ( $title->isTalkPage() ) {
 			// Talk pages get the same permission as their subject page.
@@ -321,6 +322,16 @@ class SemanticACL {
 			// No need to check permissions on public namespaces
 			return true;
 		}
+
+
+                if (
+                        isset( $wgPrivateNamespaces[$title->getNamespace()] ) &&
+                        $wgPrivateNamespaces[$title->getNamespace()]
+                        ) {
+                        // No access to private namespaces for anons
+                        return !$user->isAnon();
+                }
+
 
 		if (
 			!isset( $smwgNamespacesWithSemanticLinks[$title->getNamespace()] ) ||
@@ -375,7 +386,7 @@ class SemanticACL {
 			return false;
 		}
 
-		$hasPermission = !$user->isAnon(); //users need explicit deny, anons need explicit grant
+		$hasPermission = true; //!$user->isAnon(); //users need explicit deny, anons need explicit grant
 
 		foreach ( $aclTypes as $valueObj ) { // For each ACL specifier.
 			switch ( strtolower( $valueObj->getString() ) ) {
@@ -542,7 +553,7 @@ class SemanticACL {
 	 * @return boolean if the file has been properly categorized 
 	 */
 	protected static function pageHasRequiredCategory( $title ) {
-		wfDebug( "\n[SemanticACL] pageHasRequiredCategory: $title.\n" ); //, '/var/www/html/w/my-custom-debug.log' );
+		// wfDebug( "\n[SemanticACL] pageHasRequiredCategory: $title.\n" ); //, '/var/www/html/w/my-custom-debug.log' );
 
 		global $wgPublicPagesCategory;
 	
@@ -563,6 +574,6 @@ class SemanticACL {
 			return false;
 		}
 
-		return false; //true;
+		return true;
 	}
 }
