@@ -71,7 +71,6 @@ class SemanticACL {
 		* have to use SMW::Store::BeforeQueryResultLookupComplete to add conditions on ACL properties. 
 		* However, doing that would make it extremely difficult to tweak caching on results.
 		*/
-
 		#wfDebug( "\n[SemanticACL] onSMWStoreAfterQueryResultLookupComplete\n" );
 		#wfErrorLog( "Action: $action\n", '/var/www/html/w/my-custom-debug.log' );
 		#wfErrorLog( "Title: $title\n", '/var/www/html/w/my-custom-debug.log' );
@@ -84,6 +83,7 @@ class SemanticACL {
 		if ( !$queryResult instanceof SMWQueryResult) return; 
 
 		global $wgUser;
+		if (!$wgUser->isAnon()) return true; //check permissions only for anons
 		$filtered = [];
 		$changed = false; // If the result list was changed.
 
@@ -93,13 +93,12 @@ class SemanticACL {
 				// T296559
 				continue;
 			}
-			
 			$accessible = true;
-			
+
 			/* Check if the current user has permission to view that item.
 			 * Disable the handling of caching so we can do it ourselves.
 			*/
-			if ( !self::hasPermission( $title, 'read', $wgUser, false ) ) {
+			if ( !self::hasPermission( $title, 'read', $wgUser, false ) ) { //slow
 				self::disableCaching(); // That item is not always visible, disable caching.
 				$accessible = false;
 			} elseif($title->getNamespace() == NS_FILE && !self::fileHasRequiredCategory( $title ) && !$wgUser->isAllowed( 'view-non-categorized-media' ) ) {
@@ -109,8 +108,8 @@ class SemanticACL {
 			else if( !self::pageHasRequiredCategory( $title ) && !$wgUser->isAllowed( 'view-non-categorized-pages' ) ) {
 				self::disableCaching(); // That item is not always visible, disable caching.
 				$accessible = false;
-			} else {
-				$semanticData = $store->getSemanticData( $result );
+			} else { 
+				$semanticData = $store->getSemanticData( $result ); //slow
 
 				// Look for a SemanticACL property in the page's list of properties.
 				foreach ( $semanticData->getProperties() as $property ) {
@@ -144,7 +143,7 @@ class SemanticACL {
 			// No changes to the query results.
 			return; 
 		} 
-		
+		//return;
 		// Build a new query result object
 		$queryResult = new SMWQueryResult(
 			$queryResult->getPrintRequests(),
@@ -290,7 +289,7 @@ class SemanticACL {
 		global $wgPrivateNamespaces;
 		global $wgSemanticACLWhitelistIPs;
 		global $wgRequest;
-
+		if (!$user->isAnon()) return true; //check permissions only for anons
 		#wfDebug( "\n[SemanticACL] hasPermission.\n" );
 		#wfDebug( "Action: $action\n" );
 		#wfDebug( "Title: $title\n" );
@@ -353,7 +352,8 @@ class SemanticACL {
 		}
 	
 		$subject = SMWDIWikiPage::newFromTitle( $title );
-		$store = SMW\StoreFactory::getStore()->getSemanticData( $subject );
+		//return true;
+		$store = SMW\StoreFactory::getStore()->getSemanticData( $subject ); //slow
 		$property = new SMWDIProperty( $prefix );
 		$aclTypes = $store->getPropertyValues( $property );
 	
@@ -496,7 +496,7 @@ class SemanticACL {
 	protected static function disableCaching() {
 		global $wgParser;
 		global $wgSaclForceCaching;
-
+		//return;
 		if ( isset( $wgSaclForceCaching ) && $wgSaclForceCaching ) {
 			return;
 		} else {
