@@ -386,7 +386,7 @@ class SemanticACL {
 			return false;
 		}
 
-		$hasPermission = true; //!$user->isAnon(); //users need explicit deny, anons need explicit grant
+		$hasPermission = !$user->isAnon(); //users need explicit deny, anons need explicit grant
 
 		foreach ( $aclTypes as $valueObj ) { // For each ACL specifier.
 			switch ( strtolower( $valueObj->getString() ) ) {
